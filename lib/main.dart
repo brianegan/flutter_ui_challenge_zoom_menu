@@ -21,15 +21,77 @@ class MyHomePage extends StatefulWidget {
   _MyHomePageState createState() => new _MyHomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
+
+  double menuOpenPercent = 0.0;
+  bool isMenuOpen = false;
+  bool isMenuOpening = true;
+
+  AnimationController openMenuController;
+
+  final InnerAnimationCurve contentZoomOutSubset = new InnerAnimationCurve(0.0, 0.2);
+  final InnerAnimationCurve contentSlideOutSubset = new InnerAnimationCurve(0.1, 0.3);
+
+  final InnerAnimationCurve contentZoomAndSlideInSubset = new InnerAnimationCurve(0.0, 0.3);
+
+  _MyHomePageState() {
+    openMenuController = new AnimationController(duration: const Duration(milliseconds: 1000), vsync: this)
+        ..addListener(() {
+          setState(() {
+            menuOpenPercent = openMenuController.value;
+          });
+        });
+  }
+
+  toggle() {
+    if (isMenuOpen) {
+      isMenuOpen = false;
+      isMenuOpening = false;
+      openMenuController.reverse(from: 1.0);
+    } else {
+      isMenuOpen = true;
+      isMenuOpening = true;
+      openMenuController.forward(from: 0.0);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    final zoomOutPercent = isMenuOpening
+        ? Curves.easeOut.transform(
+            contentZoomOutSubset.transform(menuOpenPercent)
+          )
+        : 1.0 - Curves.easeOut.transform(
+            contentZoomAndSlideInSubset.transform(1.0 - menuOpenPercent)
+          );
+    final scale = 1.0 - (0.2 * zoomOutPercent);
+
+    final slidePercent = isMenuOpening
+      ? Curves.easeOut.transform(
+          contentSlideOutSubset.transform(menuOpenPercent)
+        )
+      : 1.0 - Curves.easeOut.transform(
+          contentZoomAndSlideInSubset.transform(1.0 - menuOpenPercent)
+        );
+    final horizontalOffset = 250.0 * slidePercent;
+
     return new Scaffold(
       body: new Stack(
         children: [
-          new UnderneathMenuScreen(),
-          new ContentScreen(),
+          new UnderneathMenuScreen(
+            menuOpenPercent: menuOpenPercent,
+            isMenuOpening: isMenuOpening,
+          ),
+          new Transform(
+            transform: new Matrix4.identity()
+                ..scale(scale, scale, 1.0)
+                ..translate(horizontalOffset, 0.0, 0.0),
+            alignment: Alignment.center,
+            child: new ContentScreen(
+              onMenuTap: toggle,
+              isZoomedOut: menuOpenPercent > 0.0,
+            ),
+          ),
         ]
       ),
     );
@@ -37,64 +99,96 @@ class _MyHomePageState extends State<MyHomePage> {
 }
 
 class ContentScreen extends StatefulWidget {
+
+  final isZoomedOut;
+  final onMenuTap;
+
+  ContentScreen({
+    this.isZoomedOut = false,
+    this.onMenuTap
+  });
+
   @override
   _ContentScreenState createState() => new _ContentScreenState();
 }
 
 class _ContentScreenState extends State<ContentScreen> {
+
   @override
   Widget build(BuildContext context) {
     return new Container(
       decoration: new BoxDecoration(
-        image: new DecorationImage(
-          image: new AssetImage("assets/wood_bk.jpg"),
-          fit: BoxFit.cover,
-        ),
-      ),
-      child: new Scaffold(
-        backgroundColor: Colors.transparent,
-        appBar: new AppBar(
-          leading: new IconButton(
-            icon: new Icon(
-              Icons.menu,
-            ),
-            onPressed: () {
-
-            }
+        boxShadow: const [
+          const BoxShadow(
+            color: const Color(0xFF222222),
+            blurRadius: 30.0,
           ),
-          title: new Text("THE PALEO PADDOCK"),
-          centerTitle: true,
-          backgroundColor: Colors.transparent,
-          elevation: 0.0,
-        ),
-        body: new Center(
-          child: new ListView(
-            children: [
-              new FoodCard(
-                photoAssetPath: 'assets/eggs_in_skillet.jpg',
-                icon: Icons.fastfood,
-                iconBackgroundColor: Colors.orange,
-                title: 'il domacca',
-                subtitle: '78 5th Avenue, New York',
-                likeCount: 84,
+          const BoxShadow(
+            color: const Color(0xFF111111),
+            offset: const Offset(0.0, 5.0),
+            blurRadius: 10.0,
+          ),
+        ],
+      ),
+      child: new ClipRRect(
+        borderRadius: widget.isZoomedOut
+          ? new BorderRadius.circular(15.0)
+          : new BorderRadius.circular(0.0),
+        child: new Container(
+          decoration: new BoxDecoration(
+            image: new DecorationImage(
+              image: new AssetImage("assets/wood_bk.jpg"),
+              fit: BoxFit.cover,
+            ),
+          ),
+          child: new Scaffold(
+            backgroundColor: Colors.transparent,
+            appBar: new AppBar(
+              leading: new IconButton(
+                icon: new Icon(
+                  Icons.menu,
+                ),
+                onPressed: () {
+                  if (null != widget.onMenuTap) {
+                    widget.onMenuTap();
+                  }
+                }
               ),
-              new FoodCard(
-                photoAssetPath: 'assets/steak_on_cooktop.jpg',
-                icon: Icons.local_dining,
-                iconBackgroundColor: Colors.red,
-                title: 'Mc Grady',
-                subtitle: '79 5th Avenue, New York',
-                likeCount: 84,
+              title: new Text("THE PALEO PADDOCK"),
+              centerTitle: true,
+              backgroundColor: Colors.transparent,
+              elevation: 0.0,
+            ),
+            body: new Center(
+              child: new ListView(
+                children: [
+                  new FoodCard(
+                    photoAssetPath: 'assets/eggs_in_skillet.jpg',
+                    icon: Icons.fastfood,
+                    iconBackgroundColor: Colors.orange,
+                    title: 'il domacca',
+                    subtitle: '78 5th Avenue, New York',
+                    likeCount: 84,
+                  ),
+                  new FoodCard(
+                    photoAssetPath: 'assets/steak_on_cooktop.jpg',
+                    icon: Icons.local_dining,
+                    iconBackgroundColor: Colors.red,
+                    title: 'Mc Grady',
+                    subtitle: '79 5th Avenue, New York',
+                    likeCount: 84,
+                  ),
+                  new FoodCard(
+                    photoAssetPath: 'assets/spoons_of_spices.jpg',
+                    icon: Icons.fastfood,
+                    iconBackgroundColor: Colors.orange,
+                    title: 'il domacca',
+                    subtitle: '78 5th Avenue, New York',
+                    likeCount: 84,
+                  ),
+                ],
               ),
-              new FoodCard(
-                photoAssetPath: 'assets/spoons_of_spices.jpg',
-                icon: Icons.fastfood,
-                iconBackgroundColor: Colors.orange,
-                title: 'il domacca',
-                subtitle: '78 5th Avenue, New York',
-                likeCount: 84,
-              ),
-            ],
+            ),
           ),
         ),
       ),
@@ -214,32 +308,30 @@ class FoodCard extends StatelessWidget {
 
 
 class UnderneathMenuScreen extends StatefulWidget {
+
+  final double menuOpenPercent;
+  final bool isMenuOpening;
+
+  UnderneathMenuScreen({
+    this.menuOpenPercent = 1.0,
+    this.isMenuOpening = true,
+  });
+
   @override
   _UnderneathMenuScreenState createState() => new _UnderneathMenuScreenState();
 }
 
 class _UnderneathMenuScreenState extends State<UnderneathMenuScreen> with TickerProviderStateMixin {
 
-  double transitionPercent; // 1.0 for fully transitioned, 0.0 for not at all.
-
-  AnimationController animationController;
-  final InnerAnimationCurve titleAnimationCurve = new InnerAnimationCurve(0.0, 0.5);
-
-  _UnderneathMenuScreenState({
-    this.transitionPercent = 0.0,
-  }) {
-    animationController = new AnimationController(duration: const Duration(milliseconds: 1000), vsync: this)
-        ..addListener(() {
-          setState(() {
-            transitionPercent = animationController.value;
-          });
-        });
-  }
+  final InnerAnimationCurve titleAnimationOpenCurve = new InnerAnimationCurve(0.0, 0.5);
+  final InnerAnimationCurve titleAnimationCloseCurve = new InnerAnimationCurve(0.5, 1.0);
 
   @override
   Widget build(BuildContext context) {
     final menuTitlePercent = Curves.easeOut.transform(
-      titleAnimationCurve.transform(transitionPercent)
+      widget.isMenuOpening
+        ? titleAnimationOpenCurve.transform(widget.menuOpenPercent)
+        : titleAnimationCloseCurve.transform(widget.menuOpenPercent)
     );
     final menuTitlePosition = -75.0 + (300.0 * (1.0 - menuTitlePercent));
 
@@ -263,7 +355,7 @@ class _UnderneathMenuScreenState extends State<UnderneathMenuScreen> with Ticker
                 child: new Text(
                   "Menu",
                   style: new TextStyle(
-                    color: const Color(0x88333333),
+                    color: const Color(0x88444444),
                     fontSize: 240.0,
                     fontFamily: 'mermaid',
                   ),
@@ -275,27 +367,29 @@ class _UnderneathMenuScreenState extends State<UnderneathMenuScreen> with Ticker
           ),
           // List of menu links
           new Menu(
-            transitionPercent: transitionPercent,
+            menuOpenPercent: widget.menuOpenPercent,
+            isMenuOpening: widget.isMenuOpening,
           ),
-          new Column(
-            children: [
-              new Expanded(
-                child: new Container(),
-              ),
-              new RaisedButton(
-                child: new Text('Play'),
-                onPressed: () {
-                  animationController.forward(from: 0.0);
-                }
-              ),
-              new Slider(
-                  value: transitionPercent,
-                  onChanged: (newValue) {
-                    setState(() => transitionPercent = newValue);
-                  }
-              ),
-            ],
-          )
+          // Debug animation controls
+//          new Column(
+//            children: [
+//              new Expanded(
+//                child: new Container(),
+//              ),
+//              new RaisedButton(
+//                child: new Text('Play'),
+//                onPressed: () {
+//                  animationController.forward(from: 0.0);
+//                }
+//              ),
+//              new Slider(
+//                  value: transitionPercent,
+//                  onChanged: (newValue) {
+//                    setState(() => transitionPercent = newValue);
+//                  }
+//              ),
+//            ],
+//          )
         ],
       ),
     );
@@ -304,72 +398,101 @@ class _UnderneathMenuScreenState extends State<UnderneathMenuScreen> with Ticker
 
 class Menu extends StatelessWidget {
 
-  final double transitionPercent;
+  final double menuOpenPercent;
+  final bool isMenuOpening;
 
-  final InnerAnimationCurve selectorCurve = new InnerAnimationCurve(0.0, 0.45);
-  final InnerAnimationCurve selectorOpacityCurve = new InnerAnimationCurve(0.3, 0.9);
+  final InnerAnimationCurve selectorSlideOpenCurve = new InnerAnimationCurve(0.0, 0.45);
+  final InnerAnimationCurve selectorOpacityOpenCurve = new InnerAnimationCurve(0.3, 0.9);
+  final InnerAnimationCurve selectorSlideCloseCurve = new InnerAnimationCurve(0.55, 1.0);
+  final InnerAnimationCurve selectorOpacityCloseCurve = new InnerAnimationCurve(0.1, 0.7);
 
-  final InnerAnimationCurve item1Curve = new InnerAnimationCurve(0.0, 0.3);
-  final InnerAnimationCurve item2Curve = new InnerAnimationCurve(0.1, 0.4);
-  final InnerAnimationCurve item3Curve = new InnerAnimationCurve(0.2, 0.5);
-  final InnerAnimationCurve item4Curve = new InnerAnimationCurve(0.3, 0.6);
+  final InnerAnimationCurve item1OpenCurve = new InnerAnimationCurve(0.0, 0.3);
+  final InnerAnimationCurve item2OpenCurve = new InnerAnimationCurve(0.1, 0.4);
+  final InnerAnimationCurve item3OpenCurve = new InnerAnimationCurve(0.2, 0.5);
+  final InnerAnimationCurve item4OpenCurve = new InnerAnimationCurve(0.3, 0.6);
+  final InnerAnimationCurve allItemsCloseCurve = new InnerAnimationCurve(0.8, 1.0);
 
   final InnerAnimationCurve opacityCurve = new InnerAnimationCurve(0.3, 0.8);
 
   Menu({
-    this.transitionPercent = 1.0,
+    this.menuOpenPercent = 1.0,
+    this.isMenuOpening = true,
   });
 
   @override
   Widget build(BuildContext context) {
+    // ITEM SELECTOR TRANSFORMATIONS
     final selectorPercent = Curves.easeOut.transform(
-      selectorCurve.transform(transitionPercent),
+      isMenuOpening
+        ? selectorSlideOpenCurve.transform(menuOpenPercent)
+        : selectorSlideCloseCurve.transform(menuOpenPercent)
     );
     final selectorOffset = 300.0 * (1.0 - selectorPercent);
     final selectorOpacity = Curves.easeOut.transform(
-      selectorOpacityCurve.transform(
-        selectorCurve.transform(transitionPercent),
-      ),
+      isMenuOpening
+        ? selectorOpacityOpenCurve.transform(selectorPercent)
+        : selectorOpacityCloseCurve.transform(selectorPercent)
+    );
+
+    // MENU ITEM TRANSFORMATIONS
+    final allItemsClosePercent = Curves.easeOut.transform(
+      allItemsCloseCurve.transform(menuOpenPercent)
     );
 
     final item1Percent = Curves.easeOut.transform(
-      item1Curve.transform(transitionPercent),
+      item1OpenCurve.transform(menuOpenPercent),
     );
-    final item1Offset = 100.0 * (1.0 - item1Percent);
+    final item1Offset = isMenuOpening
+      ? 100.0 * (1.0 - item1Percent)
+      : 100.0 * (1.0 - allItemsClosePercent);
     final item1Opacity = Curves.easeOut.transform(
-      opacityCurve.transform(
-        item1Curve.transform(transitionPercent),
-      ),
+      isMenuOpening
+        ? opacityCurve.transform(
+            item1OpenCurve.transform(menuOpenPercent),
+          )
+        : opacityCurve.transform(allItemsClosePercent)
     );
 
     final item2Percent = Curves.easeOut.transform(
-      item2Curve.transform(transitionPercent),
+      item2OpenCurve.transform(menuOpenPercent),
     );
-    final item2Offset = 200.0 * (1.0 - item2Percent);
+    final item2Offset = isMenuOpening
+      ? 200.0 * (1.0 - item2Percent)
+      : 100.0 * (1.0 - allItemsClosePercent);
     final item2Opacity = Curves.easeOut.transform(
-      opacityCurve.transform(
-        item2Curve.transform(transitionPercent),
-      ),
+      isMenuOpening
+        ? opacityCurve.transform(
+            item2OpenCurve.transform(menuOpenPercent),
+          )
+        : opacityCurve.transform(allItemsClosePercent)
     );
 
     final item3Percent = Curves.easeOut.transform(
-      item3Curve.transform(transitionPercent),
+      item3OpenCurve.transform(menuOpenPercent),
     );
-    final item3Offset = 300.0 * (1.0 - item3Percent);
+    final item3Offset = isMenuOpening
+      ? 300.0 * (1.0 - item3Percent)
+      : 100.0 * (1.0 - allItemsClosePercent);
     final item3Opacity = Curves.easeOut.transform(
-      opacityCurve.transform(
-        item3Curve.transform(transitionPercent),
-      ),
+      isMenuOpening
+        ? opacityCurve.transform(
+            item3OpenCurve.transform(menuOpenPercent),
+          )
+        : opacityCurve.transform(allItemsClosePercent)
     );
 
     final item4Percent = Curves.easeOut.transform(
-      item4Curve.transform(transitionPercent),
+      item4OpenCurve.transform(menuOpenPercent),
     );
-    final item4Offset = 400.0 * (1.0 - item4Percent);
+    final item4Offset = isMenuOpening
+      ? 400.0 * (1.0 - item4Percent)
+      : 100.0 * (1.0 - allItemsClosePercent);
     final item4Opacity = Curves.easeOut.transform(
-      opacityCurve.transform(
-        item4Curve.transform(transitionPercent),
-      ),
+      isMenuOpening
+        ? opacityCurve.transform(
+            item4OpenCurve.transform(menuOpenPercent),
+          )
+        : opacityCurve.transform(allItemsClosePercent)
     );
 
     return new Transform(
