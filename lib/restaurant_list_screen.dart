@@ -18,79 +18,59 @@ class _ContentScreenState extends State<RestaurantListScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return new Container(
+  return new Container(
       decoration: new BoxDecoration(
-        boxShadow: const [
-          const BoxShadow(
-            color: const Color(0xFF222222),
-            blurRadius: 30.0,
-          ),
-          const BoxShadow(
-            color: const Color(0xFF111111),
-            offset: const Offset(0.0, 5.0),
-            blurRadius: 10.0,
-          ),
-        ],
+        image: new DecorationImage(
+          image: new AssetImage("assets/wood_bk.jpg"),
+          fit: BoxFit.cover,
+        ),
       ),
-      child: new ClipRRect(
-        borderRadius: widget.isZoomedOut
-            ? new BorderRadius.circular(15.0)
-            : new BorderRadius.circular(0.0),
-        child: new Container(
-          decoration: new BoxDecoration(
-            image: new DecorationImage(
-              image: new AssetImage("assets/wood_bk.jpg"),
-              fit: BoxFit.cover,
-            ),
+      child: new Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: new AppBar(
+          leading: new IconButton(
+              icon: new Icon(
+                Icons.menu,
+              ),
+              onPressed: () {
+                if (null != widget.onMenuTap) {
+                  widget.onMenuTap();
+                }
+              }
           ),
-          child: new Scaffold(
-            backgroundColor: Colors.transparent,
-            appBar: new AppBar(
-              leading: new IconButton(
-                  icon: new Icon(
-                    Icons.menu,
-                  ),
-                  onPressed: () {
-                    if (null != widget.onMenuTap) {
-                      widget.onMenuTap();
-                    }
-                  }
+          title: new Text("THE PALEO PADDOCK"),
+          centerTitle: true,
+          backgroundColor: Colors.transparent,
+          elevation: 0.0,
+        ),
+        body: new Center(
+          child: new ListView(
+            children: [
+              new _FoodCard(
+                photoAssetPath: 'assets/eggs_in_skillet.jpg',
+                icon: Icons.fastfood,
+                iconBackgroundColor: Colors.orange,
+                title: 'il domacca',
+                subtitle: '78 5th Avenue, New York',
+                likeCount: 84,
               ),
-              title: new Text("THE PALEO PADDOCK"),
-              centerTitle: true,
-              backgroundColor: Colors.transparent,
-              elevation: 0.0,
-            ),
-            body: new Center(
-              child: new ListView(
-                children: [
-                  new _FoodCard(
-                    photoAssetPath: 'assets/eggs_in_skillet.jpg',
-                    icon: Icons.fastfood,
-                    iconBackgroundColor: Colors.orange,
-                    title: 'il domacca',
-                    subtitle: '78 5th Avenue, New York',
-                    likeCount: 84,
-                  ),
-                  new _FoodCard(
-                    photoAssetPath: 'assets/steak_on_cooktop.jpg',
-                    icon: Icons.local_dining,
-                    iconBackgroundColor: Colors.red,
-                    title: 'Mc Grady',
-                    subtitle: '79 5th Avenue, New York',
-                    likeCount: 84,
-                  ),
-                  new _FoodCard(
-                    photoAssetPath: 'assets/spoons_of_spices.jpg',
-                    icon: Icons.fastfood,
-                    iconBackgroundColor: Colors.orange,
-                    title: 'il domacca',
-                    subtitle: '78 5th Avenue, New York',
-                    likeCount: 84,
-                  ),
-                ],
+              new _FoodCard(
+                photoAssetPath: 'assets/steak_on_cooktop.jpg',
+                icon: Icons.local_dining,
+                iconBackgroundColor: Colors.red,
+                title: 'Mc Grady',
+                subtitle: '79 5th Avenue, New York',
+                likeCount: 84,
               ),
-            ),
+              new _FoodCard(
+                photoAssetPath: 'assets/spoons_of_spices.jpg',
+                icon: Icons.fastfood,
+                iconBackgroundColor: Colors.orange,
+                title: 'il domacca',
+                subtitle: '78 5th Avenue, New York',
+                likeCount: 84,
+              ),
+            ],
           ),
         ),
       ),

@@ -80,9 +80,29 @@ class _ZoomScaffoldState extends State<ZoomScaffold> with TickerProviderStateMix
               ..scale(scale, scale, 1.0)
               ..translate(horizontalOffset, 0.0, 0.0),
             alignment: Alignment.center,
-            child: new RestaurantListScreen(
-              onMenuTap: toggle,
-              isZoomedOut: menuOpenPercent > 0.0,
+            child: new Container(
+              decoration: new BoxDecoration(
+                boxShadow: const [
+                  const BoxShadow(
+                    color: const Color(0xFF222222),
+                    blurRadius: 30.0,
+                  ),
+                  const BoxShadow(
+                    color: const Color(0xFF111111),
+                    offset: const Offset(0.0, 5.0),
+                    blurRadius: 10.0,
+                  ),
+                ],
+              ),
+              child: new ClipRRect(
+                borderRadius: menuOpenPercent > 0.0
+                  ? new BorderRadius.circular(15.0)
+                  : new BorderRadius.circular(0.0),
+                child: new RestaurantListScreen(
+                  onMenuTap: toggle,
+                  isZoomedOut: menuOpenPercent > 0.0,
+                ),
+              ),
             ),
           ),
         ]
