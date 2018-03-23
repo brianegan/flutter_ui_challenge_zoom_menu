@@ -1,4 +1,4 @@
-name: zoom_menu_proto
+name: zoom_menu
 description: Flutter UI Challenge to create a menu that zooms content in and out.
 
 dependencies:
