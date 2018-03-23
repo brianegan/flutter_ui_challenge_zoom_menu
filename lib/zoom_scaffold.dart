@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:zoom_menu/menu.dart';
-import 'package:zoom_menu/prototools.dart';
 import 'package:zoom_menu/restaurant_list_screen.dart';
 import 'package:zoom_menu/underneath_menu_screen.dart';
 
@@ -24,10 +23,10 @@ class _ZoomScaffoldState extends State<ZoomScaffold> with TickerProviderStateMix
 
   AnimationController openMenuController;
 
-  final InnerAnimationCurve contentZoomOutSubset = new InnerAnimationCurve(0.0, 0.2);
-  final InnerAnimationCurve contentSlideOutSubset = new InnerAnimationCurve(0.1, 0.3);
+  final Interval contentZoomOutSubset2 = new Interval(0.0, 0.2);
+  final Interval contentSlideOutSubset2 = new Interval(0.1, 0.3);
 
-  final InnerAnimationCurve contentZoomAndSlideInSubset = new InnerAnimationCurve(0.0, 0.3);
+  final Interval contentZoomAndSlideInSubset = new Interval(0.0, 0.3);
 
   _ZoomScaffoldState() {
     openMenuController = new AnimationController(duration: const Duration(milliseconds: 1000), vsync: this)
@@ -54,7 +53,7 @@ class _ZoomScaffoldState extends State<ZoomScaffold> with TickerProviderStateMix
   Widget build(BuildContext context) {
     final zoomOutPercent = isMenuOpening
         ? Curves.easeOut.transform(
-        contentZoomOutSubset.transform(menuOpenPercent)
+        contentZoomOutSubset2.transform(menuOpenPercent)
     )
         : 1.0 - Curves.easeOut.transform(
         contentZoomAndSlideInSubset.transform(1.0 - menuOpenPercent)
@@ -63,7 +62,7 @@ class _ZoomScaffoldState extends State<ZoomScaffold> with TickerProviderStateMix
 
     final slidePercent = isMenuOpening
         ? Curves.easeOut.transform(
-        contentSlideOutSubset.transform(menuOpenPercent)
+        contentSlideOutSubset2.transform(menuOpenPercent)
     )
         : 1.0 - Curves.easeOut.transform(
         contentZoomAndSlideInSubset.transform(1.0 - menuOpenPercent)

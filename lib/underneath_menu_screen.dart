@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:zoom_menu/prototools.dart';
 
 class UnderneathMenuScreen extends StatefulWidget {
 
@@ -17,8 +16,8 @@ class UnderneathMenuScreen extends StatefulWidget {
 
 class _UnderneathMenuScreenState extends State<UnderneathMenuScreen> with TickerProviderStateMixin {
 
-  final InnerAnimationCurve titleAnimationOpenCurve = new InnerAnimationCurve(0.0, 0.5);
-  final InnerAnimationCurve titleAnimationCloseCurve = new InnerAnimationCurve(0.5, 1.0);
+  final Interval titleAnimationOpenCurve = new Interval(0.0, 0.5);
+  final Interval titleAnimationCloseCurve = new Interval(0.5, 1.0);
 
   @override
   Widget build(BuildContext context) {
@@ -95,18 +94,18 @@ class _Menu extends StatelessWidget {
   final double menuOpenPercent;
   final bool isMenuOpening;
 
-  final InnerAnimationCurve selectorSlideOpenCurve = new InnerAnimationCurve(0.0, 0.45);
-  final InnerAnimationCurve selectorOpacityOpenCurve = new InnerAnimationCurve(0.3, 0.9);
-  final InnerAnimationCurve selectorSlideCloseCurve = new InnerAnimationCurve(0.55, 1.0);
-  final InnerAnimationCurve selectorOpacityCloseCurve = new InnerAnimationCurve(0.1, 0.7);
+  final Interval selectorSlideOpenCurve = new Interval(0.0, 0.45);
+  final Interval selectorOpacityOpenCurve = new Interval(0.3, 0.9);
+  final Interval selectorSlideCloseCurve = new Interval(0.55, 1.0);
+  final Interval selectorOpacityCloseCurve = new Interval(0.1, 0.7);
 
-  final InnerAnimationCurve item1OpenCurve = new InnerAnimationCurve(0.0, 0.3);
-  final InnerAnimationCurve item2OpenCurve = new InnerAnimationCurve(0.1, 0.4);
-  final InnerAnimationCurve item3OpenCurve = new InnerAnimationCurve(0.2, 0.5);
-  final InnerAnimationCurve item4OpenCurve = new InnerAnimationCurve(0.3, 0.6);
-  final InnerAnimationCurve allItemsCloseCurve = new InnerAnimationCurve(0.8, 1.0);
+  final Interval item1OpenCurve = new Interval(0.0, 0.3);
+  final Interval item2OpenCurve = new Interval(0.1, 0.4);
+  final Interval item3OpenCurve = new Interval(0.2, 0.5);
+  final Interval item4OpenCurve = new Interval(0.3, 0.6);
+  final Interval allItemsCloseCurve = new Interval(0.8, 1.0);
 
-  final InnerAnimationCurve opacityCurve = new InnerAnimationCurve(0.3, 0.8);
+  final Interval opacityCurve = new Interval(0.3, 0.8);
 
   _Menu({
     this.menuOpenPercent = 1.0,
