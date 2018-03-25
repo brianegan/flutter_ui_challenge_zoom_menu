@@ -1,6 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:zoom_menu/zoom_menu_scaffold.dart';
 
 class RestaurantScreen extends StatelessWidget {
+
+  final MenuController menuController;
+
+  RestaurantScreen({
+    this.menuController,
+  });
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -13,7 +21,13 @@ class RestaurantScreen extends StatelessWidget {
       child: new Scaffold(
         backgroundColor: Colors.transparent,
         appBar: new AppBar(
-          title: new Text('THE PALEO PADDOCK'),
+          title: new Text(
+            'THE PALEO PADDOCK',
+            style: new TextStyle(
+              fontFamily: 'bebas-neue',
+              fontSize: 24.0,
+            ),
+          ),
           centerTitle: true,
           backgroundColor: Colors.transparent,
           leading: new IconButton(
@@ -21,7 +35,7 @@ class RestaurantScreen extends StatelessWidget {
                 Icons.menu,
               ),
               onPressed: () {
-
+                menuController.toggle();
               }
           ),
         ),
