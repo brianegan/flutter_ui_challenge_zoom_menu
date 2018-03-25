@@ -8,6 +8,7 @@ class MyApp extends StatelessWidget {
     return new MaterialApp(
       title: 'Zoom Menu',
       theme: new ThemeData(
+        brightness: Brightness.dark,
         primarySwatch: Colors.blue,
       ),
       home: new MyHomePage(),
@@ -23,8 +24,30 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
-    return new Scaffold(
-      body: new Container(),
+    return Container(
+      decoration: new BoxDecoration(
+        image: new DecorationImage(
+          image: new AssetImage('assets/wood_bk.jpg'),
+          fit: BoxFit.cover,
+        ),
+      ),
+      child: new Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: new AppBar(
+          title: new Text('THE PALEO PADDOCK'),
+          centerTitle: true,
+          backgroundColor: Colors.transparent,
+          leading: new IconButton(
+            icon: new Icon(
+              Icons.menu,
+            ),
+            onPressed: () {
+
+            }
+          ),
+        ),
+        body: new Container(),
+      ),
     );
   }
 }
