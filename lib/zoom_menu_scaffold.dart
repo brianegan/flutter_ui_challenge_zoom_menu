@@ -17,6 +17,10 @@ class ZoomMenuScaffold extends StatefulWidget {
 class _ZoomMenuScaffoldState extends State<ZoomMenuScaffold> with TickerProviderStateMixin {
 
   MenuController menuController;
+  Curve scaleDownCurve = new Interval(0.0, 0.3, curve: Curves.easeOut);
+  Curve scaleUpCurve = new Interval(0.0, 1.0, curve: Curves.easeOut);
+  Curve slideOutCurve = new Interval(0.0, 1.0, curve: Curves.easeOut);
+  Curve slideInCurve = new Interval(0.0, 1.0, curve: Curves.easeOut);
 
   @override
   void initState() {
@@ -39,10 +43,32 @@ class _ZoomMenuScaffoldState extends State<ZoomMenuScaffold> with TickerProvider
   }
 
   Widget _scaleAndPositionContentScreen(contentScreen) {
-    final contentScale = 1.0 - (0.20 * menuController.openPercent);
-    final slideTranslation = 250.0 * menuController.openPercent;
+    var contentScale;
+    var slideTranslation;
+    var contentCornerRadius;
 
-    final contentCornerRadius = 10.0 * menuController.openPercent;
+    switch (menuController.state) {
+      case MenuState.open:
+        contentScale = 0.8;
+        slideTranslation = 250.0;
+        contentCornerRadius = 10.0;
+        break;
+      case MenuState.opening:
+        contentScale = 1.0 - (0.20 * scaleDownCurve.transform(menuController.openPercent));
+        slideTranslation = 250.0 * slideOutCurve.transform(menuController.openPercent);
+        contentCornerRadius = 10.0 * menuController.openPercent;
+        break;
+      case MenuState.closed:
+        contentScale = 1.0;
+        slideTranslation = 0.0;
+        contentCornerRadius = 0.0;
+        break;
+      case MenuState.closing:
+        contentScale = 1.0 - (0.20 * scaleUpCurve.transform(menuController.openPercent));
+        slideTranslation = 250.0 * slideInCurve.transform(menuController.openPercent);
+        contentCornerRadius = 10.0 * menuController.openPercent;
+        break;
+    }
 
     return new Transform(
       transform: new Matrix4
