@@ -42,6 +42,8 @@ class _ZoomMenuScaffoldState extends State<ZoomMenuScaffold> with TickerProvider
     final contentScale = 1.0 - (0.20 * menuController.openPercent);
     final slideTranslation = 250.0 * menuController.openPercent;
 
+    final contentCornerRadius = 10.0 * menuController.openPercent;
+
     return new Transform(
       transform: new Matrix4
           .translationValues(slideTranslation, 0.0, 0.0)
@@ -59,7 +61,7 @@ class _ZoomMenuScaffoldState extends State<ZoomMenuScaffold> with TickerProvider
           ],
         ),
         child: new ClipRRect(
-          borderRadius: new BorderRadius.circular(10.0),
+          borderRadius: new BorderRadius.circular(contentCornerRadius),
           child: contentScreen,
         ),
       ),

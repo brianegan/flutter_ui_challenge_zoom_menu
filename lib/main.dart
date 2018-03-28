@@ -30,7 +30,9 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return new ZoomMenuScaffold(
       menuScreenBuilder: (context, menuController) {
-        return new MenuScreen();
+        return new MenuScreen(
+          menuController: menuController,
+        );
       },
       contentScreenBuilder: (context, menuController) {
         return new RestaurantScreen(
