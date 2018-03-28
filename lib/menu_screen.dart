@@ -203,20 +203,20 @@ class _MenuItemAnimation {
     AnimationController controller,
   })
       : translationTween = new Tween(begin: 200.0, end: 0.0),
-        translationCurve = new Interval(index * 0.15, index * 0.15 + 0.15, curve: Curves.easeOut),
+        translationCurve = new Interval(index * 0.15, index * 0.15 + 0.30, curve: Curves.easeOut),
         opacityTween = new Tween(begin: 0.0, end: 1.0),
-        opacityCurve = new Interval(index * 0.15, index * 0.15 + 0.15, curve: Curves.easeOut) {
+        opacityCurve = new Interval(index * 0.15, index * 0.15 + 0.30, curve: Curves.easeOut) {
     translationCurvedAnimation = new CurvedAnimation(
       parent: controller,
       curve: translationCurve,
-      reverseCurve: new Interval(0.85, 1.0, curve: Curves.easeOut),
+      reverseCurve: new Interval(0.75, 1.0, curve: Curves.easeOut),
     );
     translationAnimation = translationTween.animate(translationCurvedAnimation);
 
     opacityCurvedAnimation = new CurvedAnimation(
       parent: controller,
       curve: opacityCurve,
-      reverseCurve: new Interval(0.85, 1.0, curve: Curves.easeOut),
+      reverseCurve: new Interval(0.75, 1.0, curve: Curves.easeOut),
     );
     opacityAnimation = opacityTween.animate(opacityCurvedAnimation);
   }
