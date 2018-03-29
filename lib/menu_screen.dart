@@ -21,7 +21,6 @@ class MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
 
   AnimationController animationController;
   Animation<double> menuTitleTranslationAnimation;
-  List<_MenuItemAnimation> listItemAnimations = [];
 
   @override
   void initState() {
@@ -41,15 +40,6 @@ class MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
         )
         ..addListener(() => setState(() {})),
       );
-
-    for (int i = 0; i < 4; ++i) {
-      listItemAnimations.add(
-        new _MenuItemAnimation(
-          index: i,
-          controller: animationController,
-        )
-      );
-    }
   }
 
   @override
@@ -115,73 +105,226 @@ class MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
               ),
             ),
           ),
-
-          // Menu items
           new Transform(
             transform: new Matrix4.translationValues(0.0, 250.0, 0.0),
-            child: new Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                new Transform(
-                  transform: new Matrix4.translationValues(
-                      0.0,
-                      listItemAnimations[0].translation,
-                      0.0
-                  ),
-                  child: new Opacity(
-                    opacity: listItemAnimations[0].opacity,
-                    child: new _MenuItem(
-                      title: 'THE PADDOCK',
-                      isSelected: true,
-                    ),
-                  ),
-                ),
-                new Transform(
-                  transform: new Matrix4.translationValues(
-                      0.0,
-                      listItemAnimations[1].translation,
-                      0.0
-                  ),
-                  child: new Opacity(
-                    opacity: listItemAnimations[1].opacity,
-                    child: new _MenuItem(
-                      title: 'THE HERD',
-                      isSelected: false,
-                    ),
-                  ),
-                ),
-                new Transform(
-                  transform: new Matrix4.translationValues(
-                      0.0,
-                      listItemAnimations[2].translation,
-                      0.0
-                  ),
-                  child: new Opacity(
-                    opacity: listItemAnimations[2].opacity,
-                    child: new _MenuItem(
-                      title: 'HELP US GROW',
-                      isSelected: false,
-                    ),
-                  ),
-                ),
-                new Transform(
-                  transform: new Matrix4.translationValues(
-                      0.0,
-                      listItemAnimations[3].translation,
-                      0.0
-                  ),
-                  child: new Opacity(
-                    opacity: listItemAnimations[3].opacity,
-                    child: new _MenuItem(
-                      title: 'SETTINGS',
-                      isSelected: false,
-                    ),
-                  ),
-                ),
-              ],
+            child: new _MenuList(
+              menuController: widget.menuController,
+              animationController: animationController,
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _MenuList extends StatefulWidget {
+
+  final MenuController menuController;
+  final AnimationController animationController;
+
+  _MenuList({
+    this.menuController,
+    this.animationController,
+  });
+
+  @override
+  _MenuListState createState() => new _MenuListState();
+}
+
+class _MenuListState extends State<_MenuList> {
+
+  final menuItemTitles = [
+    "THE PADDOCK",
+    "THE HERO",
+    "HELP US GROW",
+    "SETTINGS"
+  ];
+
+  List<_MenuItemAnimation> listItemAnimations = [];
+  int selectedIndex = 0;
+  double selectorYPosition = 500.0;
+  double selectorHeight = 0.0;
+
+  @override
+  void initState() {
+    super.initState();
+
+    for (int i = 0; i < 4; ++i) {
+      listItemAnimations.add(
+          new _MenuItemAnimation(
+            index: i,
+            controller: widget.animationController,
+          )
+      );
+    }
+  }
+
+  _createListItems() {
+    List<Widget> listItems = [];
+
+    for (var i = 0; i < 4; ++i) {
+      final listItem = _createListItem(i, menuItemTitles[i], i == selectedIndex);
+
+      if (i == selectedIndex) {
+        listItems.add(
+            _SelectedMenuItem(
+                onPositionChange: _onSelectedItemPositionChange,
+                child: listItem
+            )
+        );
+      } else {
+        listItems.add(listItem);
+      }
+    }
+
+    return listItems;
+  }
+
+  _createListItem(int index, String title, [bool isSelected = false]) {
+    return new Transform(
+      transform: new Matrix4.translationValues(
+          0.0,
+          listItemAnimations[index].translation,
+          0.0
+      ),
+      child: new Opacity(
+        opacity: listItemAnimations[index].opacity,
+        child: new _MenuItem(
+          title: title,
+          isSelected: isSelected,
+        ),
+      ),
+    );
+  }
+
+  _onSelectedItemPositionChange(newY, newHeight) {
+    setState(() {
+      selectorYPosition = newY;
+      selectorHeight = newHeight;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final renderBox = context.findRenderObject() as RenderBox;
+    var localSelectorYPosition = 0.0;
+    if (widget.menuController.state != MenuState.closing
+        && widget.menuController.state != MenuState.closed
+        && renderBox != null) {
+      localSelectorYPosition = renderBox.globalToLocal(new Offset(0.0, selectorYPosition)).dy;
+    } else {
+      localSelectorYPosition = 300.0;
+    }
+
+    return new Stack(
+      children: [
+        new Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: _createListItems(),
+        ),
+        new MenuSelector(
+          yPosition: localSelectorYPosition,
+          height: selectorHeight,
+          menuState: widget.menuController.state,
+          menuPercentOpen: widget.menuController.openPercent,
+        ),
+      ]
+    );
+  }
+}
+
+
+class _SelectedMenuItem extends StatefulWidget {
+
+  final Function(double y, double height) onPositionChange;
+  final Widget child;
+
+  _SelectedMenuItem({
+    this.onPositionChange,
+    this.child,
+  });
+
+  @override
+  _SelectedMenuItemState createState() => new _SelectedMenuItemState();
+}
+
+class _SelectedMenuItemState extends State<_SelectedMenuItem> {
+
+  double prevY, prevHeight;
+
+  @override
+  Widget build(BuildContext context) {
+    RenderBox renderBox = context.findRenderObject() as RenderBox;
+    if (renderBox != null) {
+      Offset globalPosition = renderBox.localToGlobal(new Offset(0.0, 0.0));
+      final newY = globalPosition.dy;
+      final newHeight = renderBox.size.height;
+
+      if (newY != prevY && newHeight != prevHeight) {
+        print('Updating selected item position.');
+        print('Selected item offset: ${globalPosition.dy}');
+        print('Selected item size; ${renderBox.size}');
+        print('');
+
+        () async {
+          widget.onPositionChange(newY, newHeight);
+        }();
+
+        prevY = newY;
+        prevHeight = newHeight;
+      }
+    }
+
+    return widget.child;
+  }
+}
+
+class MenuSelector extends StatefulWidget {
+
+  final double yPosition;
+  final double height;
+  final MenuState menuState;
+  final double menuPercentOpen;
+
+  MenuSelector({
+    this.yPosition,
+    this.height,
+    this.menuState,
+    this.menuPercentOpen,
+  });
+
+  @override
+  _MenuSelectorState createState() => new _MenuSelectorState();
+}
+
+class _MenuSelectorState extends State<MenuSelector> {
+
+  final opacityInCurve = new Interval(0.0, 0.7);
+  final opacityOutCurve = new Interval(0.5, 1.0);
+
+  @override
+  Widget build(BuildContext context) {
+    var selectorOpacity;
+    if (widget.menuState == MenuState.opening) {
+      selectorOpacity = opacityInCurve.transform(widget.menuPercentOpen);
+    } else if (widget.menuState == MenuState.closing) {
+      selectorOpacity = opacityOutCurve.transform(widget.menuPercentOpen);
+    } else {
+      selectorOpacity = widget.menuPercentOpen;
+    }
+
+    return new AnimatedPositioned(
+      left: 0.0,
+      top: widget.yPosition,
+      duration: const Duration(milliseconds: 150),
+      child: new Opacity(
+        opacity: selectorOpacity,
+        child: new Container(
+          width: 5.0,
+          height: widget.height,
+          color: Colors.red,
+        ),
       ),
     );
   }
