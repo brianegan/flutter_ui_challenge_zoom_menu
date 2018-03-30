@@ -17,6 +17,21 @@ class ZoomMenuScaffold extends StatefulWidget {
 
 class _ZoomMenuScaffoldState extends State<ZoomMenuScaffold> {
 
+  MenuController menuController;
+
+  @override
+  void initState() {
+    super.initState();
+    menuController = new MenuController()
+      ..addListener(() => setState(() {}));
+  }
+
+  @override
+  void dispose() {
+    menuController.dispose();
+    super.dispose();
+  }
+
   _createContentDisplay() {
     return _zoomAndSlideContent(
         Container(
@@ -32,7 +47,7 @@ class _ZoomMenuScaffoldState extends State<ZoomMenuScaffold> {
               leading: new IconButton(
                   icon: new Icon(Icons.menu),
                   onPressed: () {
-                    // TODO: open/close the menu
+                    menuController.toggle();
                   }
               ),
               title: new Text(
@@ -50,10 +65,14 @@ class _ZoomMenuScaffoldState extends State<ZoomMenuScaffold> {
   }
 
   _zoomAndSlideContent(Widget content) {
+    final slideAmount = 275.0 * menuController.percentOpen;
+    final contentScale = 1.0 - (0.2 * menuController.percentOpen);
+    final cornerRadius = 10.0 * menuController.percentOpen;
+
     return new Transform(
       transform: new Matrix4
-        .translationValues(275.0, 0.0, 0.0)
-        ..scale(0.8, 0.8),
+        .translationValues(slideAmount, 0.0, 0.0)
+        ..scale(contentScale, contentScale),
       alignment: Alignment.centerLeft,
       child: Container(
         decoration: new BoxDecoration(
@@ -67,7 +86,7 @@ class _ZoomMenuScaffoldState extends State<ZoomMenuScaffold> {
           ],
         ),
         child: new ClipRRect(
-          borderRadius: new BorderRadius.circular(10.0),
+          borderRadius: new BorderRadius.circular(cornerRadius),
           child: content
         ),
       ),
@@ -85,7 +104,6 @@ class _ZoomMenuScaffoldState extends State<ZoomMenuScaffold> {
   }
 }
 
-
 class Screen {
   final String title;
   final DecorationImage background;
@@ -96,4 +114,76 @@ class Screen {
     this.background,
     this.contentBuilder,
   });
+}
+
+class ZoomScaffoldMenuController extends StatelessWidget {
+
+  final ZoomScaffoldBuilder builder;
+
+  ZoomScaffoldMenuController({
+    this.builder,
+  });
+
+  getMenuController(BuildContext context) {
+    return _MenuControllerHolder.of(context);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return builder(context, getMenuController(context));
+  }
+}
+
+typedef Widget ZoomScaffoldBuilder(
+  BuildContext context,
+  MenuController menuController,
+);
+
+class _MenuControllerHolder extends InheritedWidget {
+
+  static MenuController of(BuildContext context) {
+    final scaffoldState = context.ancestorStateOfType(
+        new TypeMatcher<_ZoomMenuScaffoldState>()
+    ) as _ZoomMenuScaffoldState;
+    return scaffoldState.menuController;
+  }
+
+  @override
+  bool updateShouldNotify(_MenuControllerHolder oldWidget) {
+    return false;
+  }
+}
+
+class MenuController extends ChangeNotifier {
+  MenuState state = MenuState.closed;
+  double percentOpen = 0.0;
+
+  open() {
+    // TODO:
+    state = MenuState.open;
+    percentOpen = 1.0;
+    notifyListeners();
+  }
+
+  close() {
+    // TODO:
+    state = MenuState.closed;
+    percentOpen = 0.0;
+    notifyListeners();
+  }
+
+  toggle() {
+    if (state == MenuState.open) {
+      close();
+    } else if (state == MenuState.closed) {
+      open();
+    }
+  }
+}
+
+enum MenuState {
+  closed,
+  opening,
+  open,
+  closing,
 }
