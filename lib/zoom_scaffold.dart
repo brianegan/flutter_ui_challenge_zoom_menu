@@ -18,6 +18,10 @@ class ZoomMenuScaffold extends StatefulWidget {
 class _ZoomMenuScaffoldState extends State<ZoomMenuScaffold> with TickerProviderStateMixin {
 
   MenuController menuController;
+  Curve scaleDownCurve = new Interval(0.0, 0.3, curve: Curves.easeOut);
+  Curve scaleUpCurve = new Interval(0.0, 1.0, curve: Curves.easeOut);
+  Curve slideOutCurve = new Interval(0.0, 1.0, curve: Curves.easeOut);
+  Curve slideInCurve = new Interval(0.0, 1.0, curve: Curves.easeOut);
 
   @override
   void initState() {
@@ -67,8 +71,28 @@ class _ZoomMenuScaffoldState extends State<ZoomMenuScaffold> with TickerProvider
   }
 
   _zoomAndSlideContent(Widget content) {
-    final slideAmount = 275.0 * menuController.percentOpen;
-    final contentScale = 1.0 - (0.2 * menuController.percentOpen);
+    var slidePercent, scalePercent;
+    switch (menuController.state) {
+      case MenuState.closed:
+        slidePercent = 0.0;
+        scalePercent = 0.0;
+        break;
+      case MenuState.open:
+        slidePercent = 1.0;
+        scalePercent = 1.0;
+        break;
+      case MenuState.opening:
+        slidePercent = slideOutCurve.transform(menuController.percentOpen);
+        scalePercent = scaleDownCurve.transform(menuController.percentOpen);
+        break;
+      case MenuState.closing:
+        slidePercent = slideInCurve.transform(menuController.percentOpen);
+        scalePercent = scaleUpCurve.transform(menuController.percentOpen);
+        break;
+    }
+
+    final slideAmount = 275.0 * slidePercent;
+    final contentScale = 1.0 - (0.2 * scalePercent);
     final cornerRadius = 10.0 * menuController.percentOpen;
 
     return new Transform(
