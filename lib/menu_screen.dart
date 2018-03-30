@@ -5,10 +5,12 @@ class MenuScreen extends StatefulWidget {
 
   final Menu menu;
   final String selectedMenuItemId;
+  final Function(String) onMenuItemSelected;
 
   MenuScreen({
     this.menu,
     this.selectedMenuItemId,
+    this.onMenuItemSelected,
   });
 
   @override
@@ -51,6 +53,7 @@ class _MenuScreenState extends State<MenuScreen> {
         isSelected: item.id == widget.selectedMenuItemId,
         onTap: () {
           menuController.close();
+          widget.onMenuItemSelected(item.id);
         }
       );
     }).toList();

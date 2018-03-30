@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:zoom_menu/menu_screen.dart';
+import 'package:zoom_menu/other_screen.dart';
 import 'package:zoom_menu/restaurant_screen.dart';
 import 'package:zoom_menu/zoom_scaffold.dart';
 
@@ -46,6 +47,7 @@ class _MyHomePageState extends State<MyHomePage> {
     ],
   );
 
+  String selectedMenuItemId = 'restaurant';
   Screen activeScreen = restaurantScreen;
 
   @override
@@ -53,7 +55,18 @@ class _MyHomePageState extends State<MyHomePage> {
     return new ZoomMenuScaffold(
       menuScreen: new MenuScreen(
         menu: menu,
-        selectedMenuItemId: 'restaurant',
+        selectedMenuItemId: selectedMenuItemId,
+        onMenuItemSelected: (menuItemId) {
+          setState(() {
+            selectedMenuItemId = menuItemId;
+
+            if (selectedMenuItemId == 'restaurant') {
+              activeScreen = restaurantScreen;
+            } else {
+              activeScreen = otherScreen;
+            }
+          });
+        },
       ),
       contentScreen: activeScreen,
     );
