@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:zoom_menu/menu_screen.dart';
 import 'package:zoom_menu/other_screen.dart';
 import 'package:zoom_menu/restaurant_screen.dart';
 import 'package:zoom_menu/zoom_scaffold.dart';
@@ -30,6 +31,7 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return new ZoomMenuScaffold(
+      menuScreen: new MenuScreen(),
       contentScreen: activeScreen,
     );
   }

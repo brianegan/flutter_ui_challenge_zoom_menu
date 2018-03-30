@@ -3,9 +3,11 @@ import 'package:flutter/widgets.dart';
 
 class ZoomMenuScaffold extends StatefulWidget {
 
+  final Widget menuScreen;
   final Screen contentScreen;
 
   ZoomMenuScaffold({
+    this.menuScreen,
     this.contentScreen,
   });
 
@@ -14,8 +16,8 @@ class ZoomMenuScaffold extends StatefulWidget {
 }
 
 class _ZoomMenuScaffoldState extends State<ZoomMenuScaffold> {
-  @override
-  Widget build(BuildContext context) {
+
+  _createContentDisplay() {
     return Container(
       decoration: new BoxDecoration(
         image: widget.contentScreen.background,
@@ -42,6 +44,16 @@ class _ZoomMenuScaffoldState extends State<ZoomMenuScaffold> {
         ),
         body: widget.contentScreen.contentBuilder(context),
       ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        widget.menuScreen,
+//        _createContentDisplay(),
+      ],
     );
   }
 }
