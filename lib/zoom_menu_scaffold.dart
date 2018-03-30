@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class ZoomMenuScaffold extends StatefulWidget {
 
   final ZoomMenuScreenBuilder menuScreenBuilder;
-  final ZoomMenuScreenBuilder contentScreenBuilder;
+  final ZoomMenuContentScreenBuilder contentScreenBuilder;
 
   ZoomMenuScaffold({
     this.menuScreenBuilder,
@@ -101,7 +101,10 @@ class _ZoomMenuScaffoldState extends State<ZoomMenuScaffold> with TickerProvider
         children: [
           widget.menuScreenBuilder(context, menuController),
           _scaleAndPositionContentScreen(
-            widget.contentScreenBuilder(context, menuController),
+            new _ContentArea(
+              menuController: menuController,
+              contentScreen: widget.contentScreenBuilder(context, menuController),
+            ),
           ),
         ],
       ),
@@ -110,6 +113,64 @@ class _ZoomMenuScaffoldState extends State<ZoomMenuScaffold> with TickerProvider
 }
 
 typedef Widget ZoomMenuScreenBuilder(BuildContext context, MenuController menuController);
+
+class _ContentArea extends StatelessWidget {
+
+  final MenuController menuController;
+  final ContentScreen contentScreen;
+
+  _ContentArea({
+    this.menuController,
+    this.contentScreen,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: new BoxDecoration(
+        image: contentScreen.background,
+      ),
+      child: new Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: new AppBar(
+          title: new Text(
+            contentScreen.title,
+            style: new TextStyle(
+              fontFamily: 'bebas-neue',
+              fontSize: 24.0,
+            ),
+          ),
+          centerTitle: true,
+          backgroundColor: Colors.transparent,
+          elevation: 0.0,
+          leading: new IconButton(
+              icon: new Icon(
+                Icons.menu,
+              ),
+              onPressed: () {
+                menuController.toggle();
+              }
+          ),
+        ),
+        body: contentScreen.content,
+      ),
+    );
+  }
+}
+
+class ContentScreen {
+  final String title;
+  final DecorationImage background;
+  final Widget content;
+
+  ContentScreen({
+    this.title,
+    this.background,
+    this.content,
+  });
+}
+
+typedef ContentScreen ZoomMenuContentScreenBuilder(BuildContext context, MenuController menuController);
 
 class MenuController extends ChangeNotifier {
   final Duration menuTransitionDuration;

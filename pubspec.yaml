@@ -32,6 +32,7 @@ flutter:
     - assets/eggs_in_skillet.jpg
     - assets/steak_on_cooktop.jpg
     - assets/spoons_of_spices.jpg
+    - assets/space_bk.jpg
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.io/assets-and-images/#resolution-aware.

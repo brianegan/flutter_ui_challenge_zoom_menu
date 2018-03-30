@@ -1,73 +1,36 @@
 import 'package:flutter/material.dart';
-import 'package:zoom_menu/zoom_menu_scaffold.dart';
 
-class RestaurantScreen extends StatelessWidget {
-
-  final MenuController menuController;
-
-  RestaurantScreen({
-    this.menuController,
-  });
+class RestaurantScreenContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: new BoxDecoration(
-        image: new DecorationImage(
-          image: new AssetImage('assets/wood_bk.jpg'),
-          fit: BoxFit.cover,
+    return new ListView(
+      children: [
+        new _RestaurantCard(
+          headerImageAssetPath: 'assets/eggs_in_skillet.jpg',
+          icon: Icons.fastfood,
+          iconBackgroundColor: Colors.orange,
+          title: 'il domacca',
+          subtitle: '78 5TH AVENUE, NEW YORK',
+          heartCount: 84,
         ),
-      ),
-      child: new Scaffold(
-        backgroundColor: Colors.transparent,
-        appBar: new AppBar(
-          title: new Text(
-            'THE PALEO PADDOCK',
-            style: new TextStyle(
-              fontFamily: 'bebas-neue',
-              fontSize: 24.0,
-            ),
-          ),
-          centerTitle: true,
-          backgroundColor: Colors.transparent,
-          leading: new IconButton(
-              icon: new Icon(
-                Icons.menu,
-              ),
-              onPressed: () {
-                menuController.toggle();
-              }
-          ),
+        new _RestaurantCard(
+          headerImageAssetPath: 'assets/steak_on_cooktop.jpg',
+          icon: Icons.local_dining,
+          iconBackgroundColor: Colors.red,
+          title: 'Mc Grady',
+          subtitle: '79 5TH AVENUE, NEW YORK',
+          heartCount: 84,
         ),
-        body: new ListView(
-          children: [
-            new _RestaurantCard(
-              headerImageAssetPath: 'assets/eggs_in_skillet.jpg',
-              icon: Icons.fastfood,
-              iconBackgroundColor: Colors.orange,
-              title: 'il domacca',
-              subtitle: '78 5TH AVENUE, NEW YORK',
-              heartCount: 84,
-            ),
-            new _RestaurantCard(
-              headerImageAssetPath: 'assets/steak_on_cooktop.jpg',
-              icon: Icons.local_dining,
-              iconBackgroundColor: Colors.red,
-              title: 'Mc Grady',
-              subtitle: '79 5TH AVENUE, NEW YORK',
-              heartCount: 84,
-            ),
-            new _RestaurantCard(
-              headerImageAssetPath: 'assets/spoons_of_spices.jpg',
-              icon: Icons.fastfood,
-              iconBackgroundColor: Colors.purpleAccent,
-              title: 'Sugar & Spice',
-              subtitle: '80 5TH AVENUE, NEW YORK',
-              heartCount: 84,
-            ),
-          ],
+        new _RestaurantCard(
+          headerImageAssetPath: 'assets/spoons_of_spices.jpg',
+          icon: Icons.fastfood,
+          iconBackgroundColor: Colors.purpleAccent,
+          title: 'Sugar & Spice',
+          subtitle: '80 5TH AVENUE, NEW YORK',
+          heartCount: 84,
         ),
-      ),
+      ],
     );
   }
 }

@@ -1,12 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:zoom_menu/menu.dart';
 import 'package:zoom_menu/zoom_menu_scaffold.dart';
 
 class MenuScreen extends StatefulWidget {
 
+  final Menu menu;
+  final String selectedMenuItemId;
   final MenuController menuController;
+  final Function(String) onMenuItemSelected;
 
   MenuScreen({
+    this.menu,
+    this.selectedMenuItemId,
     this.menuController,
+    this.onMenuItemSelected,
   });
 
   @override
@@ -77,42 +84,47 @@ class MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
         ),
         color: Colors.transparent,
       ),
-
-      child: new Stack(
-        children: [
-          // "Menu" title
-          new Transform(
-            transform: new Matrix4.translationValues(
-                menuTitleTranslationAnimation.value,
-                0.0,
-                0.0
-            ),
-            child: new OverflowBox(
-              maxWidth: double.infinity,
-              alignment: Alignment.topLeft,
-              child: new Padding(
-                padding: const EdgeInsets.all(30.0),
-                child: new Text(
-                  'Menu',
-                  style: new TextStyle(
-                    color: const Color(0x88444444),
-                    fontSize: 240.0,
-                    fontFamily: 'mermaid',
+      child: new Material(
+        color: Colors.transparent,
+        child: new Stack(
+          children: [
+            // "Menu" title
+            new Transform(
+              transform: new Matrix4.translationValues(
+                  menuTitleTranslationAnimation.value,
+                  0.0,
+                  0.0
+              ),
+              child: new OverflowBox(
+                maxWidth: double.infinity,
+                alignment: Alignment.topLeft,
+                child: new Padding(
+                  padding: const EdgeInsets.all(30.0),
+                  child: new Text(
+                    'Menu',
+                    style: new TextStyle(
+                      color: const Color(0x88444444),
+                      fontSize: 240.0,
+                      fontFamily: 'mermaid',
+                    ),
+                    textAlign: TextAlign.left,
+                    softWrap: false,
                   ),
-                  textAlign: TextAlign.left,
-                  softWrap: false,
                 ),
               ),
             ),
-          ),
-          new Transform(
-            transform: new Matrix4.translationValues(0.0, 250.0, 0.0),
-            child: new _MenuList(
-              menuController: widget.menuController,
-              animationController: animationController,
+            new Transform(
+              transform: new Matrix4.translationValues(0.0, 250.0, 0.0),
+              child: new _MenuList(
+                menu: widget.menu,
+                selectedMenuItemId: widget.selectedMenuItemId,
+                menuController: widget.menuController,
+                animationController: animationController,
+                onMenuItemSelected: widget.onMenuItemSelected,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -120,12 +132,18 @@ class MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
 
 class _MenuList extends StatefulWidget {
 
+  final Menu menu;
+  final String selectedMenuItemId;
   final MenuController menuController;
   final AnimationController animationController;
+  final Function(String) onMenuItemSelected;
 
   _MenuList({
+    this.menu,
+    this.selectedMenuItemId,
     this.menuController,
     this.animationController,
+    this.onMenuItemSelected,
   });
 
   @override
@@ -134,15 +152,7 @@ class _MenuList extends StatefulWidget {
 
 class _MenuListState extends State<_MenuList> {
 
-  final menuItemTitles = [
-    "THE PADDOCK",
-    "THE HERO",
-    "HELP US GROW",
-    "SETTINGS"
-  ];
-
   List<_MenuItemAnimation> listItemAnimations = [];
-  int selectedIndex = 0;
   double selectorYPosition = 500.0;
   double selectorHeight = 0.0;
 
@@ -163,8 +173,11 @@ class _MenuListState extends State<_MenuList> {
   _createListItems() {
     List<Widget> listItems = [];
 
+    final selectedIndex = widget.menu.items.indexWhere(
+        (MenuItem item) => item.id == widget.selectedMenuItemId
+    );
     for (var i = 0; i < 4; ++i) {
-      final listItem = _createListItem(i, menuItemTitles[i], i == selectedIndex);
+      final listItem = _createListItem(i, widget.menu.items[i].title, i == selectedIndex);
 
       if (i == selectedIndex) {
         listItems.add(
@@ -193,6 +206,12 @@ class _MenuListState extends State<_MenuList> {
         child: new _MenuItem(
           title: title,
           isSelected: isSelected,
+          onTap: !isSelected
+            ? () {
+              print('on tap');
+              widget.onMenuItemSelected(widget.menu.items[index].id);
+            }
+            : null,
         ),
       ),
     );
@@ -373,23 +392,32 @@ class _MenuItem extends StatelessWidget {
 
   final title;
   final isSelected;
+  final Function() onTap;
 
   _MenuItem({
     this.title,
     this.isSelected,
+    this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    return new Padding(
-      padding: const EdgeInsets.only(left: 50.0, top: 15.0, bottom: 15.0),
-      child: new Text(
-        title,
-        style: new TextStyle(
-          color: isSelected ? Colors.red : Colors.white,
-          fontSize: 25.0,
-          fontFamily: 'bebas-neue',
-          letterSpacing: 2.0,
+    return new InkWell(
+      splashColor: const Color(0x44000000),
+      onTap: onTap,
+      child: new Container(
+        width: double.infinity,
+        child: new Padding(
+          padding: const EdgeInsets.only(left: 50.0, top: 15.0, bottom: 15.0),
+          child: new Text(
+            title,
+            style: new TextStyle(
+              color: isSelected ? Colors.red : Colors.white,
+              fontSize: 25.0,
+              fontFamily: 'bebas-neue',
+              letterSpacing: 2.0,
+            ),
+          ),
         ),
       ),
     );
