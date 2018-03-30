@@ -15,14 +15,16 @@ class ZoomMenuScaffold extends StatefulWidget {
   _ZoomMenuScaffoldState createState() => new _ZoomMenuScaffoldState();
 }
 
-class _ZoomMenuScaffoldState extends State<ZoomMenuScaffold> {
+class _ZoomMenuScaffoldState extends State<ZoomMenuScaffold> with TickerProviderStateMixin {
 
   MenuController menuController;
 
   @override
   void initState() {
     super.initState();
-    menuController = new MenuController()
+    menuController = new MenuController(
+      vsync: this,
+    )
       ..addListener(() => setState(() {}));
   }
 
@@ -155,21 +157,53 @@ class _MenuControllerHolder extends InheritedWidget {
 }
 
 class MenuController extends ChangeNotifier {
+  final TickerProvider vsync;
+  final AnimationController _animationController;
   MenuState state = MenuState.closed;
-  double percentOpen = 0.0;
+
+  MenuController({
+    this.vsync,
+  }) : _animationController = new AnimationController(vsync: vsync) {
+    _animationController
+      ..duration = const Duration(milliseconds: 250)
+      ..addListener(() {
+        notifyListeners();
+      })
+      ..addStatusListener((AnimationStatus status) {
+        switch (status) {
+          case AnimationStatus.forward:
+            state = MenuState.opening;
+            break;
+          case AnimationStatus.reverse:
+            state = MenuState.closing;
+            break;
+          case AnimationStatus.completed:
+            state = MenuState.open;
+            break;
+          case AnimationStatus.dismissed:
+            state = MenuState.closed;
+            break;
+        }
+        notifyListeners();
+      });
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
+
+  get percentOpen {
+    return _animationController.value;
+  }
 
   open() {
-    // TODO:
-    state = MenuState.open;
-    percentOpen = 1.0;
-    notifyListeners();
+    _animationController.forward();
   }
 
   close() {
-    // TODO:
-    state = MenuState.closed;
-    percentOpen = 0.0;
-    notifyListeners();
+    _animationController.reverse();
   }
 
   toggle() {
