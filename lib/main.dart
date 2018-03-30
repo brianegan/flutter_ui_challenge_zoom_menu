@@ -53,19 +53,24 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return new ZoomMenuScaffold(
-      menuScreen: new MenuScreen(
-        menu: menu,
-        selectedMenuItemId: selectedMenuItemId,
-        onMenuItemSelected: (menuItemId) {
-          setState(() {
-            selectedMenuItemId = menuItemId;
+      menuScreen: new ZoomScaffoldMenuController(
+        builder: (BuildContext context, MenuController menuController) {
+          return new MenuScreen(
+            menuController: menuController,
+            menu: menu,
+            selectedMenuItemId: selectedMenuItemId,
+            onMenuItemSelected: (menuItemId) {
+              setState(() {
+                selectedMenuItemId = menuItemId;
 
-            if (selectedMenuItemId == 'restaurant') {
-              activeScreen = restaurantScreen;
-            } else {
-              activeScreen = otherScreen;
-            }
-          });
+                if (selectedMenuItemId == 'restaurant') {
+                  activeScreen = restaurantScreen;
+                } else {
+                  activeScreen = otherScreen;
+                }
+              });
+            },
+          );
         },
       ),
       contentScreen: activeScreen,

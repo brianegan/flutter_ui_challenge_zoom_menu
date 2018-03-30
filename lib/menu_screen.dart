@@ -3,11 +3,13 @@ import 'package:zoom_menu/zoom_scaffold.dart';
 
 class MenuScreen extends StatefulWidget {
 
+  final MenuController menuController;
   final Menu menu;
   final String selectedMenuItemId;
   final Function(String) onMenuItemSelected;
 
   MenuScreen({
+    this.menuController,
     this.menu,
     this.selectedMenuItemId,
     this.onMenuItemSelected,
@@ -19,10 +21,31 @@ class MenuScreen extends StatefulWidget {
 
 class _MenuScreenState extends State<MenuScreen> {
 
+  MenuController menuController;
+
+  @override
+  void initState() {
+    super.initState();
+    menuController = widget.menuController
+      ..addListener(_onMenuControllerChange);
+  }
+
+  @override
+  void dispose() {
+    menuController.removeListener(_onMenuControllerChange);
+    super.dispose();
+  }
+
+  _onMenuControllerChange() {
+    setState(() {});
+  }
+
   _createMenuTitle() {
+    final titleTranslation = 250.0 * (1.0 - menuController.percentOpen) - 100.0;
+
     return new Transform(
       transform: new Matrix4.translationValues(
-          -100.0,
+          titleTranslation,
           0.0,
           0.0
       ),
