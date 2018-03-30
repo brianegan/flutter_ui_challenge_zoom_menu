@@ -2,6 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:zoom_menu/zoom_scaffold.dart';
 
 class MenuScreen extends StatefulWidget {
+
+  final Menu menu;
+  final String selectedMenuItemId;
+
+  MenuScreen({
+    this.menu,
+    this.selectedMenuItemId,
+  });
+
   @override
   _MenuScreenState createState() => new _MenuScreenState();
 }
@@ -36,37 +45,18 @@ class _MenuScreenState extends State<MenuScreen> {
   }
 
   _createMenuList(MenuController menuController) {
+    final listItemWidgets = widget.menu.items.map((MenuItem item) {
+      return new _MenuListItem(
+        title: item.title,
+        isSelected: item.id == widget.selectedMenuItemId,
+        onTap: () {
+          menuController.close();
+        }
+      );
+    }).toList();
+
     return new Column(
-      children: [
-        new _MenuListItem(
-          title: 'THE PADDOCK',
-          isSelected: true,
-          onTap: () {
-            menuController.close();
-          },
-        ),
-        new _MenuListItem(
-          title: 'THE HERO',
-          isSelected: false,
-          onTap: () {
-            menuController.close();
-          },
-        ),
-        new _MenuListItem(
-          title: 'HELP US GROW',
-          isSelected: false,
-          onTap: () {
-            menuController.close();
-          },
-        ),
-        new _MenuListItem(
-          title: 'SETTINGS',
-          isSelected: false,
-          onTap: () {
-            menuController.close();
-          },
-        ),
-      ],
+      children: listItemWidgets,
     );
   }
 
@@ -134,4 +124,22 @@ class _MenuListItem extends StatelessWidget {
       ),
     );
   }
+}
+
+class Menu {
+  final List<MenuItem> items;
+
+  Menu({
+    this.items,
+  });
+}
+
+class MenuItem {
+  final String id;
+  final String title;
+
+  MenuItem({
+    this.id,
+    this.title,
+  });
 }
