@@ -25,36 +25,12 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
 
-  Screen activeScreen = otherScreen;
+  Screen activeScreen = restaurantScreen;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: new BoxDecoration(
-        image: activeScreen.background,
-      ),
-      child: new Scaffold(
-        backgroundColor: Colors.transparent,
-        appBar: new AppBar(
-          backgroundColor: Colors.transparent,
-          centerTitle: true,
-          elevation: 0.0,
-          leading: new IconButton(
-            icon: new Icon(Icons.menu),
-            onPressed: () {
-              // TODO: open/close the menu
-            }
-          ),
-          title: new Text(
-            activeScreen.title,
-            style: new TextStyle(
-              fontFamily: 'bebas-neue',
-              fontSize: 25.0,
-            ),
-          ),
-        ),
-        body: activeScreen.contentBuilder(context),
-      ),
+    return new ZoomMenuScaffold(
+      contentScreen: activeScreen,
     );
   }
 }
