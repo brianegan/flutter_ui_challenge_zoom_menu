@@ -70,14 +70,27 @@ class _MenuScreenState extends State<MenuScreen> {
   }
 
   _createMenuList(MenuController menuController) {
+    final slideTime = 200;
+    final delayPerItem = menuController.state != MenuState.closing ? 100 : 0;
+    var index = 0;
     final listItemWidgets = widget.menu.items.map((MenuItem item) {
-      return new _MenuListItem(
-        title: item.title,
-        isSelected: item.id == widget.selectedMenuItemId,
-        onTap: () {
-          menuController.close();
-          widget.onMenuItemSelected(item.id);
-        }
+      final int delay = index * delayPerItem;
+      final int duration = delay + slideTime;
+      final interval = new Interval(1.0 - ((duration - delay) / duration), 1.0);
+      ++index;
+
+      return _AnimatedMenuListItem(
+        menuState: menuController.state,
+        duration: new Duration(milliseconds: duration),
+        curve: interval,
+        menuListItem: new _MenuListItem(
+          title: item.title,
+          isSelected: item.id == widget.selectedMenuItemId,
+          onTap: () {
+            menuController.close();
+            widget.onMenuItemSelected(item.id);
+          }
+        ),
       );
     }).toList();
 
@@ -112,6 +125,81 @@ class _MenuScreenState extends State<MenuScreen> {
           ),
         );
       },
+    );
+  }
+}
+
+class _AnimatedMenuListItem extends ImplicitlyAnimatedWidget {
+
+  final _MenuListItem menuListItem;
+  final MenuState menuState;
+  final Duration duration;
+
+  _AnimatedMenuListItem({
+    this.menuListItem,
+    this.menuState,
+    this.duration,
+    curve
+  }): super(
+    duration: duration,
+    curve: curve
+  );
+
+  @override
+  __AnimatedMenuListItemState createState() => new __AnimatedMenuListItemState();
+}
+
+class __AnimatedMenuListItemState extends AnimatedWidgetBaseState<_AnimatedMenuListItem> {
+
+  final double closedSlidePosition = 200.0;
+  final double openSlidePosition = 0.0;
+
+  Tween<double> _translation;
+  Tween<double> _opacity;
+
+  @override
+  void forEachTween(TweenVisitor<dynamic> visitor) {
+    var slide;
+    var opacity;
+
+    switch (widget.menuState) {
+      case MenuState.closed:
+      case MenuState.closing:
+        slide = closedSlidePosition;
+        opacity = 0.0;
+        break;
+      case MenuState.open:
+      case MenuState.opening:
+        slide = openSlidePosition;
+        opacity = 1.0;
+        break;
+    }
+
+    _translation = visitor(
+      _translation,
+      slide,
+      (dynamic value) => new Tween<double>(begin: value),
+    );
+
+    _opacity = visitor(
+      _opacity,
+      opacity,
+      (dynamic value) => new Tween<double>(begin: value),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return new Opacity(
+      opacity: _opacity.evaluate(animation),
+      child: new Transform(
+        transform: new Matrix4.translationValues(
+            0.0,
+            _translation.evaluate(animation),
+            0.0
+        ),
+        child: widget.menuListItem,
+      ),
     );
   }
 }
