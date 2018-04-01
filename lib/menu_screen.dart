@@ -69,36 +69,6 @@ class _MenuScreenState extends State<MenuScreen> {
     );
   }
 
-  _createMenuList(MenuController menuController) {
-    final slideTime = 200;
-    final delayPerItem = menuController.state != MenuState.closing ? 100 : 0;
-    var index = 0;
-    final listItemWidgets = widget.menu.items.map((MenuItem item) {
-      final int delay = index * delayPerItem;
-      final int duration = delay + slideTime;
-      final interval = new Interval(1.0 - ((duration - delay) / duration), 1.0);
-      ++index;
-
-      return _AnimatedMenuListItem(
-        menuState: menuController.state,
-        duration: new Duration(milliseconds: duration),
-        curve: interval,
-        menuListItem: new _MenuListItem(
-          title: item.title,
-          isSelected: item.id == widget.selectedMenuItemId,
-          onTap: () {
-            menuController.close();
-            widget.onMenuItemSelected(item.id);
-          }
-        ),
-      );
-    }).toList();
-
-    return new Column(
-      children: listItemWidgets,
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return new ZoomScaffoldMenuController(
@@ -118,7 +88,12 @@ class _MenuScreenState extends State<MenuScreen> {
 
                 new Transform(
                   transform: new Matrix4.translationValues(0.0, 225.0, 0.0),
-                  child: _createMenuList(menuController),
+                  child: new _MenuList(
+                    menu: widget.menu,
+                    menuController: menuController,
+                    selectedMenuItemId: widget.selectedMenuItemId,
+                    onMenuItemSelected: widget.onMenuItemSelected,
+                  ),
                 ),
               ],
             ),
@@ -129,16 +104,169 @@ class _MenuScreenState extends State<MenuScreen> {
   }
 }
 
+final _menuListKey = new GlobalKey(debugLabel: '_MenuList');
+
+class _MenuList extends StatefulWidget {
+
+  final Menu menu;
+  final MenuController menuController;
+  final String selectedMenuItemId;
+  final Function(String) onMenuItemSelected;
+
+  _MenuList({
+    this.menu,
+    this.menuController,
+    this.selectedMenuItemId,
+    this.onMenuItemSelected,
+  }) : super(key:_menuListKey);
+
+  @override
+  __MenuListState createState() => new __MenuListState();
+}
+
+class __MenuListState extends State<_MenuList> {
+
+  RenderBox selectedItemRenderBox;
+
+  _createMenuList() {
+    final slideTime = 200;
+    final delayPerItem = widget.menuController.state != MenuState.closing ? 100 : 0;
+    var index = 0;
+    final listItemWidgets = widget.menu.items.map((MenuItem item) {
+      final int delay = index * delayPerItem;
+      final int duration = delay + slideTime;
+      final interval = new Interval(1.0 - ((duration - delay) / duration), 1.0);
+      ++index;
+
+      return _AnimatedMenuListItem(
+        menuState: widget.menuController.state,
+        duration: new Duration(milliseconds: duration),
+        curve: interval,
+        isSelected: item.id == widget.selectedMenuItemId,
+        menuListItem: new _MenuListItem(
+            title: item.title,
+            isSelected: item.id == widget.selectedMenuItemId,
+            onTap: () {
+              widget.menuController.close();
+              widget.onMenuItemSelected(item.id);
+            }
+        ),
+      );
+    }).toList();
+
+    return new Column(
+      children: listItemWidgets,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    Offset localOffset;
+    var selectorTop, selectorBottom, opacity;
+    if (null != selectedItemRenderBox) {
+      final globalOffset = selectedItemRenderBox.localToGlobal(const Offset(0.0, 0.0));
+
+      RenderBox myRenderBox = context.findRenderObject() as RenderBox;
+      localOffset = myRenderBox.globalToLocal(globalOffset);
+
+      if (widget.menuController.state == MenuState.opening
+          || widget.menuController.state == MenuState.open) {
+        selectorTop = localOffset.dy;
+        selectorBottom = selectorTop + selectedItemRenderBox.size.height;
+        opacity = 1.0;
+      } else {
+        selectorTop = 300.0;
+        selectorBottom = 350.0;
+        opacity = 0.0;
+      }
+    } else {
+      selectorTop = 300.0;
+      selectorBottom = 350.0;
+      opacity = 0.0;
+    }
+
+    return new Stack(
+      children: [
+        _createMenuList(),
+        new _ItemSelector(
+          top: selectorTop,
+          bottom: selectorBottom,
+          opacity: opacity,
+        ),
+      ]
+    );
+  }
+}
+
+class _ItemSelector extends ImplicitlyAnimatedWidget {
+
+  final double top;
+  final double bottom;
+  final double opacity;
+
+  _ItemSelector({
+    this.top,
+    this.bottom,
+    this.opacity,
+  }) : super(duration: const Duration(milliseconds: 250));
+
+  @override
+  __ItemSelectorState createState() => new __ItemSelectorState();
+}
+
+class __ItemSelectorState extends AnimatedWidgetBaseState<_ItemSelector> {
+
+  Tween<double> _top;
+  Tween<double> _bottom;
+  Tween<double> _opacity;
+
+  @override
+  void forEachTween(TweenVisitor visitor) {
+    _top = visitor(
+      _top,
+      widget.top,
+      (dynamic value) => new Tween<double>(begin: value),
+    );
+    _bottom = visitor(
+      _bottom,
+      widget.bottom,
+      (dynamic value) => new Tween<double>(begin: value),
+    );
+    _opacity = visitor(
+      _opacity,
+      widget.opacity,
+          (dynamic value) => new Tween<double>(begin: value),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return new Positioned(
+      top: _top.evaluate(animation),
+      child: new Opacity(
+        opacity: _opacity.evaluate(animation),
+        child: new Container(
+          width: 5.0,
+          height: _bottom.evaluate(animation) - _top.evaluate(animation),
+          color: Colors.red,
+        ),
+      ),
+    );
+  }
+}
+
 class _AnimatedMenuListItem extends ImplicitlyAnimatedWidget {
 
   final _MenuListItem menuListItem;
   final MenuState menuState;
   final Duration duration;
+  final bool isSelected;
 
   _AnimatedMenuListItem({
     this.menuListItem,
     this.menuState,
     this.duration,
+    this.isSelected,
     curve
   }): super(
     duration: duration,
@@ -156,6 +284,21 @@ class __AnimatedMenuListItemState extends AnimatedWidgetBaseState<_AnimatedMenuL
 
   Tween<double> _translation;
   Tween<double> _opacity;
+
+  bool initializedSelectedItem = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _updateSelectedRenderBox();
+  }
+
+  _updateSelectedRenderBox() {
+    final renderBox = context.findRenderObject() as RenderBox;
+    if (widget.isSelected && renderBox != null) {
+      (_menuListKey.currentState as __MenuListState).selectedItemRenderBox = renderBox;
+    }
+  }
 
   @override
   void forEachTween(TweenVisitor<dynamic> visitor) {
@@ -190,6 +333,8 @@ class __AnimatedMenuListItemState extends AnimatedWidgetBaseState<_AnimatedMenuL
 
   @override
   Widget build(BuildContext context) {
+    _updateSelectedRenderBox();
+
     return new Opacity(
       opacity: _opacity.evaluate(animation),
       child: new Transform(
