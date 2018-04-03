@@ -2,6 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:zoom_menu/zoom_scaffold.dart';
 
 class MenuScreen extends StatefulWidget {
+
+  final Menu menu;
+  final String selectedItemId;
+  final Function(String) onMenuItemSelected;
+
+  MenuScreen({
+    this.menu,
+    this.selectedItemId,
+    this.onMenuItemSelected,
+  });
+
   @override
   _MenuScreenState createState() => new _MenuScreenState();
 }
@@ -70,13 +81,10 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
   }
 
   createMenuItems(MenuController menuController) {
-    final titles = ['THE PADDOCK', 'THE HERO', 'HELP US GROW', 'SETTINGS'];
-    final selectedIndex = 0;
-
     final List<Widget> listItems = [];
     final animationIntervalDuration = 0.5;
     final perListItemDelay = menuController.state != MenuState.closing ? 0.15 : 0.0;
-    for (var i = 0; i < titles.length; ++i) {
+    for (var i = 0; i < widget.menu.items.length; ++i) {
       final animationIntervalStart = i * perListItemDelay;
       final animationIntervalEnd = animationIntervalStart + animationIntervalDuration;
 
@@ -90,9 +98,10 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
                 curve: Curves.easeOut
             ),
             menuListItem: new _MenuListItem(
-              title: titles[i],
-              isSelected: i == selectedIndex,
+              title: widget.menu.items[i].title,
+              isSelected: widget.menu.items[i].id == widget.selectedItemId,
               onTap: () {
+                widget.onMenuItemSelected(widget.menu.items[i].id);
                 menuController.close();
               },
             ),
@@ -248,4 +257,22 @@ class _MenuListItem extends StatelessWidget {
       ),
     );
   }
+}
+
+class Menu {
+  final List<MenuItem> items;
+
+  Menu({
+    this.items,
+  });
+}
+
+class MenuItem {
+  final String id;
+  final String title;
+
+  MenuItem({
+    this.id,
+    this.title,
+  });
 }
