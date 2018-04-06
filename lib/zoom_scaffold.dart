@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:zoom_menu/menu_screen.dart';
 
 class ZoomScaffold extends StatefulWidget {
-
   final Widget menuScreen;
   final Screen contentScreen;
 
@@ -15,8 +13,8 @@ class ZoomScaffold extends StatefulWidget {
   _ZoomScaffoldState createState() => new _ZoomScaffoldState();
 }
 
-class _ZoomScaffoldState extends State<ZoomScaffold> with TickerProviderStateMixin {
-
+class _ZoomScaffoldState extends State<ZoomScaffold>
+    with TickerProviderStateMixin {
   MenuController menuController;
   Curve scaleDownCurve = new Interval(0.0, 0.3, curve: Curves.easeOut);
   Curve scaleUpCurve = new Interval(0.0, 1.0, curve: Curves.easeOut);
@@ -29,8 +27,7 @@ class _ZoomScaffoldState extends State<ZoomScaffold> with TickerProviderStateMix
 
     menuController = new MenuController(
       vsync: this,
-    )
-    ..addListener(() => setState(() {}));
+    )..addListener(() => setState(() {}));
   }
 
   @override
@@ -40,34 +37,31 @@ class _ZoomScaffoldState extends State<ZoomScaffold> with TickerProviderStateMix
   }
 
   createContentDisplay() {
-    return zoomAndSlideContent(
-      new Container(
-        decoration: new BoxDecoration(
-          image: widget.contentScreen.background,
-        ),
-        child: new Scaffold(
+    return zoomAndSlideContent(new Container(
+      decoration: new BoxDecoration(
+        image: widget.contentScreen.background,
+      ),
+      child: new Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: new AppBar(
           backgroundColor: Colors.transparent,
-          appBar: new AppBar(
-            backgroundColor: Colors.transparent,
-            elevation: 0.0,
-            leading: new IconButton(
-                icon: new Icon(Icons.menu),
-                onPressed: () {
-                  menuController.toggle();
-                }
-            ),
-            title: new Text(
-              widget.contentScreen.title,
-              style: new TextStyle(
-                fontFamily: 'bebas-neue',
-                fontSize: 25.0,
-              ),
+          elevation: 0.0,
+          leading: new IconButton(
+              icon: new Icon(Icons.menu),
+              onPressed: () {
+                menuController.toggle(context);
+              }),
+          title: new Text(
+            widget.contentScreen.title,
+            style: new TextStyle(
+              fontFamily: 'bebas-neue',
+              fontSize: 25.0,
             ),
           ),
-          body: widget.contentScreen.contentBuilder(context),
         ),
-      )
-    );
+        body: widget.contentScreen.contentBuilder(context),
+      ),
+    ));
   }
 
   zoomAndSlideContent(Widget content) {
@@ -96,8 +90,7 @@ class _ZoomScaffoldState extends State<ZoomScaffold> with TickerProviderStateMix
     final cornerRadius = 10.0 * menuController.percentOpen;
 
     return new Transform(
-      transform: new Matrix4
-        .translationValues(slideAmount, 0.0, 0.0)
+      transform: new Matrix4.translationValues(slideAmount, 0.0, 0.0)
         ..scale(contentScale, contentScale),
       alignment: Alignment.centerLeft,
       child: new Container(
@@ -112,26 +105,21 @@ class _ZoomScaffoldState extends State<ZoomScaffold> with TickerProviderStateMix
           ],
         ),
         child: new ClipRRect(
-          borderRadius: new BorderRadius.circular(cornerRadius),
-          child: content
-        ),
+            borderRadius: new BorderRadius.circular(cornerRadius),
+            child: content),
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        widget.menuScreen,
-        createContentDisplay()
-      ],
+    return new Stack(
+      children: [widget.menuScreen, createContentDisplay()],
     );
   }
 }
 
 class ZoomScaffoldMenuController extends StatefulWidget {
-
   final ZoomScaffoldBuilder builder;
 
   ZoomScaffoldMenuController({
@@ -144,8 +132,8 @@ class ZoomScaffoldMenuController extends StatefulWidget {
   }
 }
 
-class ZoomScaffoldMenuControllerState extends State<ZoomScaffoldMenuController> {
-
+class ZoomScaffoldMenuControllerState
+    extends State<ZoomScaffoldMenuController> {
   MenuController menuController;
 
   @override
@@ -163,9 +151,9 @@ class ZoomScaffoldMenuControllerState extends State<ZoomScaffoldMenuController> 
   }
 
   getMenuController(BuildContext context) {
-    final scaffoldState = context.ancestorStateOfType(
-        new TypeMatcher<_ZoomScaffoldState>()
-    ) as _ZoomScaffoldState;
+    final scaffoldState =
+        context.ancestorStateOfType(new TypeMatcher<_ZoomScaffoldState>())
+            as _ZoomScaffoldState;
     return scaffoldState.menuController;
   }
 
@@ -177,13 +165,10 @@ class ZoomScaffoldMenuControllerState extends State<ZoomScaffoldMenuController> 
   Widget build(BuildContext context) {
     return widget.builder(context, getMenuController(context));
   }
-
 }
 
 typedef Widget ZoomScaffoldBuilder(
-  BuildContext context,
-  MenuController menuController
-);
+    BuildContext context, MenuController menuController);
 
 class Screen {
   final String title;
@@ -201,6 +186,7 @@ class MenuController extends ChangeNotifier {
   final TickerProvider vsync;
   final AnimationController _animationController;
   MenuState state = MenuState.closed;
+  LocalHistoryEntry _historyEntry;
 
   MenuController({
     this.vsync,
@@ -239,19 +225,28 @@ class MenuController extends ChangeNotifier {
     return _animationController.value;
   }
 
-  open() {
+  _open(BuildContext context) {
+    if (_historyEntry == null) {
+      final ModalRoute<dynamic> route = ModalRoute.of(context);
+      if (route != null) {
+        _historyEntry = new LocalHistoryEntry(onRemove: _close);
+        route.addLocalHistoryEntry(_historyEntry);
+      }
+    }
+
     _animationController.forward();
   }
 
-  close() {
+  _close() {
+    _historyEntry = null;
     _animationController.reverse();
   }
 
-  toggle() {
+  toggle(BuildContext context) {
     if (state == MenuState.open) {
-      close();
+      Navigator.pop(context);
     } else if (state == MenuState.closed) {
-      open();
+      _open(context);
     }
   }
 }

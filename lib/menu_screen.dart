@@ -4,10 +4,9 @@ import 'package:zoom_menu/zoom_scaffold.dart';
 final menuScreenKey = new GlobalKey(debugLabel: 'MenuScreen');
 
 class MenuScreen extends StatefulWidget {
-
   final Menu menu;
-  final String selectedItemId;
-  final Function(String) onMenuItemSelected;
+  final MenuItemId selectedItemId;
+  final Function(MenuItem) onMenuItemSelected;
 
   MenuScreen({
     this.menu,
@@ -20,7 +19,6 @@ class MenuScreen extends StatefulWidget {
 }
 
 class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
-
   AnimationController titleAnimationController;
   double selectorYTop;
   double selectorYBottom;
@@ -64,66 +62,62 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
     }
 
     return new AnimatedBuilder(
-      animation: titleAnimationController,
-      child: new OverflowBox(
-        maxWidth: double.infinity,
-        alignment: Alignment.topLeft,
-        child: new Padding(
-          padding: const EdgeInsets.all(30.0),
-          child: new Text(
-            'Menu',
-            style: new TextStyle(
-              color: const Color(0x88444444),
-              fontSize: 240.0,
-              fontFamily: 'mermaid',
+        animation: titleAnimationController,
+        child: new OverflowBox(
+          maxWidth: double.infinity,
+          alignment: Alignment.topLeft,
+          child: new Padding(
+            padding: const EdgeInsets.all(30.0),
+            child: new Text(
+              'Menu',
+              style: new TextStyle(
+                color: const Color(0x88444444),
+                fontSize: 240.0,
+                fontFamily: 'mermaid',
+              ),
+              textAlign: TextAlign.left,
+              softWrap: false,
             ),
-            textAlign: TextAlign.left,
-            softWrap: false,
           ),
         ),
-      ),
-      builder: (BuildContext context, Widget child) {
-        return new Transform(
-          transform: new Matrix4.translationValues(
-            250.0 * (1.0 - titleAnimationController.value) - 100.0,
-            0.0,
-            0.0,
-          ),
-          child: child,
-        );
-      }
-    );
+        builder: (BuildContext context, Widget child) {
+          return new Transform(
+            transform: new Matrix4.translationValues(
+              250.0 * (1.0 - titleAnimationController.value) - 100.0,
+              0.0,
+              0.0,
+            ),
+            child: child,
+          );
+        });
   }
 
   createMenuItems(MenuController menuController) {
     final List<Widget> listItems = [];
     final animationIntervalDuration = 0.5;
-    final perListItemDelay = menuController.state != MenuState.closing ? 0.15 : 0.0;
+    final perListItemDelay =
+        menuController.state != MenuState.closing ? 0.15 : 0.0;
     for (var i = 0; i < widget.menu.items.length; ++i) {
       final animationIntervalStart = i * perListItemDelay;
-      final animationIntervalEnd = animationIntervalStart + animationIntervalDuration;
+      final animationIntervalEnd =
+          animationIntervalStart + animationIntervalDuration;
       final isSelected = widget.menu.items[i].id == widget.selectedItemId;
 
-      listItems.add(
-          new AnimatedMenuListItem(
-            menuState: menuController.state,
-            isSelected: isSelected,
-            duration: const Duration(milliseconds: 600),
-            curve: new Interval(
-                animationIntervalStart,
-                animationIntervalEnd,
-                curve: Curves.easeOut
-            ),
-            menuListItem: new _MenuListItem(
-              title: widget.menu.items[i].title,
-              isSelected: isSelected,
-              onTap: () {
-                widget.onMenuItemSelected(widget.menu.items[i].id);
-                menuController.close();
-              },
-            ),
-          )
-      );
+      listItems.add(new AnimatedMenuListItem(
+        menuState: menuController.state,
+        isSelected: isSelected,
+        duration: const Duration(milliseconds: 600),
+        curve: new Interval(animationIntervalStart, animationIntervalEnd,
+            curve: Curves.easeOut),
+        menuListItem: new _MenuListItem(
+          title: widget.menu.items[i].title,
+          isSelected: isSelected,
+          onTap: () {
+            Navigator.pop(context);
+            widget.onMenuItemSelected(widget.menu.items[i]);
+          },
+        ),
+      ));
     }
 
     return new Transform(
@@ -132,7 +126,7 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
         225.0,
         0.0,
       ),
-      child: Column(
+      child: new Column(
         children: listItems,
       ),
     );
@@ -141,60 +135,59 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return new ZoomScaffoldMenuController(
-      builder: (BuildContext context, MenuController menuController) {
-        var shouldRenderSelector = true;
-        var actualSelectorYTop = selectorYTop;
-        var actualSelectorYBottom = selectorYBottom;
-        var selectorOpacity = 1.0;
+        builder: (BuildContext context, MenuController menuController) {
+      var shouldRenderSelector = true;
+      var actualSelectorYTop = selectorYTop;
+      var actualSelectorYBottom = selectorYBottom;
+      var selectorOpacity = 1.0;
 
-        if (menuController.state == MenuState.closed
-            || menuController.state == MenuState.closing
-            || selectorYTop == null) {
-          final RenderBox menuScreenRenderBox = context.findRenderObject() as RenderBox;
+      if (menuController.state == MenuState.closed ||
+          menuController.state == MenuState.closing ||
+          selectorYTop == null) {
+        final RenderBox menuScreenRenderBox =
+            context.findRenderObject() as RenderBox;
 
-          if (menuScreenRenderBox != null) {
-            final menuScreenHeight = menuScreenRenderBox.size.height;
-            actualSelectorYTop = menuScreenHeight - 50.0;
-            actualSelectorYBottom = menuScreenHeight;
-            selectorOpacity = 0.0;
-          } else {
-            shouldRenderSelector = false;
-          }
+        if (menuScreenRenderBox != null) {
+          final menuScreenHeight = menuScreenRenderBox.size.height;
+          actualSelectorYTop = menuScreenHeight - 50.0;
+          actualSelectorYBottom = menuScreenHeight;
+          selectorOpacity = 0.0;
+        } else {
+          shouldRenderSelector = false;
         }
+      }
 
-        return new Container(
-          width: double.infinity,
-          height: double.infinity,
-          decoration: new BoxDecoration(
-            image: new DecorationImage(
-              image: new AssetImage('assets/dark_grunge_bk.jpg'),
-              fit: BoxFit.cover,
-            ),
+      return new Container(
+        width: double.infinity,
+        height: double.infinity,
+        decoration: new BoxDecoration(
+          image: new DecorationImage(
+            image: new AssetImage('assets/dark_grunge_bk.jpg'),
+            fit: BoxFit.cover,
           ),
-          child: new Material(
-            color: Colors.transparent,
-            child: new Stack(
-              children: [
-                createMenuTitle(menuController),
-                createMenuItems(menuController),
-                shouldRenderSelector
+        ),
+        child: new Material(
+          color: Colors.transparent,
+          child: new Stack(
+            children: [
+              createMenuTitle(menuController),
+              createMenuItems(menuController),
+              shouldRenderSelector
                   ? new ItemSelector(
                       topY: actualSelectorYTop,
                       bottomY: actualSelectorYBottom,
                       opacity: selectorOpacity,
                     )
                   : new Container(),
-              ],
-            ),
+            ],
           ),
-        );
-      }
-    );
+        ),
+      );
+    });
   }
 }
 
 class ItemSelector extends ImplicitlyAnimatedWidget {
-
   final double topY;
   final double bottomY;
   final double opacity;
@@ -210,7 +203,6 @@ class ItemSelector extends ImplicitlyAnimatedWidget {
 }
 
 class _ItemSelectorState extends AnimatedWidgetBaseState<ItemSelector> {
-
   Tween<double> _topY;
   Tween<double> _bottomY;
   Tween<double> _opacity;
@@ -250,9 +242,7 @@ class _ItemSelectorState extends AnimatedWidgetBaseState<ItemSelector> {
   }
 }
 
-
 class AnimatedMenuListItem extends ImplicitlyAnimatedWidget {
-
   final _MenuListItem menuListItem;
   final MenuState menuState;
   final bool isSelected;
@@ -270,8 +260,8 @@ class AnimatedMenuListItem extends ImplicitlyAnimatedWidget {
   _AnimatedMenuListItemState createState() => new _AnimatedMenuListItemState();
 }
 
-class _AnimatedMenuListItemState extends AnimatedWidgetBaseState<AnimatedMenuListItem> {
-
+class _AnimatedMenuListItemState
+    extends AnimatedWidgetBaseState<AnimatedMenuListItem> {
   final double closedSlidePosition = 200.0;
   final double openSlidePosition = 0.0;
 
@@ -281,7 +271,8 @@ class _AnimatedMenuListItemState extends AnimatedWidgetBaseState<AnimatedMenuLis
   updateSelectedRenderBox() {
     final renderBox = context.findRenderObject() as RenderBox;
     if (renderBox != null && widget.isSelected) {
-      (menuScreenKey.currentState as _MenuScreenState).setSelectedRenderBox(renderBox);
+      (menuScreenKey.currentState as _MenuScreenState)
+          .setSelectedRenderBox(renderBox);
     }
   }
 
@@ -333,9 +324,7 @@ class _AnimatedMenuListItemState extends AnimatedWidgetBaseState<AnimatedMenuLis
   }
 }
 
-
 class _MenuListItem extends StatelessWidget {
-
   final String title;
   final bool isSelected;
   final Function() onTap;
@@ -350,10 +339,8 @@ class _MenuListItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return new InkWell(
       splashColor: const Color(0x44000000),
-      onTap: isSelected
-          ? null
-          : onTap,
-      child: Container(
+      onTap: isSelected ? null : onTap,
+      child: new Container(
         width: double.infinity,
         child: new Padding(
           padding: const EdgeInsets.only(left: 50.0, top: 15.0, bottom: 15.0),
@@ -381,11 +368,18 @@ class Menu {
 }
 
 class MenuItem {
-  final String id;
+  final MenuItemId id;
   final String title;
 
   MenuItem({
     this.id,
     this.title,
   });
+}
+
+enum MenuItemId {
+  restaurant,
+  other1,
+  other2,
+  other3,
 }
